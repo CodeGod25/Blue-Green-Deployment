@@ -1410,12 +1410,20 @@ class MonitorHandler(BaseHTTPRequestHandler):
             state = STORE._load_json(STATE_FILE, {})
             active = (state.get("activeTarget") or "blue").lower()
             STORE.canary_weights = {"blue": 100, "green": 0} if active == "blue" else {"blue": 0, "green": 100}
+        
+        # Immediate Nginx reset to stop any ongoing hijacking
+        STORE._update_upstream_config(target=None)
+        try:
+            subprocess.run(["docker", "exec", "blue-green-proxy", "nginx", "-s", "reload"], check=False, timeout=5)
+        except Exception:
+            pass
 
         # Step 2: Start any stopped containers
         containers_started = []
         containers_failed = []
         for container in ["blue-app", "green-app"]:
             try:
+                # Use --attach=false to ensure start returns promptly but ignore if already running
                 result = subprocess.run(
                     ["docker", "start", container],
                     check=False, capture_output=True, timeout=15
@@ -1425,20 +1433,27 @@ class MonitorHandler(BaseHTTPRequestHandler):
                     log_event("CONTAINER_STARTED", f"Container '{container}' started successfully.", level="INFO")
                 else:
                     err = result.stderr.decode("utf-8", errors="ignore").strip()
-                    log_event("CONTAINER_START_WARN", f"docker start {container} returned non-zero: {err}", level="WARN")
-                    # Non-zero often just means the container was already running — not fatal
-                    containers_started.append(container)
+                    # Check if error is just "already running"
+                    if "already" in err.lower() or "is running" in err.lower():
+                         containers_started.append(container)
+                         log_event("CONTAINER_START_INFO", f"Container '{container}' is already running.", level="INFO")
+                    else:
+                        log_event("CONTAINER_START_WARN", f"docker start {container} returned non-zero: {err}", level="WARN")
+                        # Non-zero often just means the container was already running — not fatal
+                        containers_started.append(container)
             except Exception as e:
                 containers_failed.append(container)
                 log_event("CONTAINER_START_FAILED", f"Failed to start container '{container}': {e}", level="ERROR")
 
         # Step 3: Wait briefly for containers to become available, then reset Nginx
-        time.sleep(2)
+        # Increased wait time for app initialization
+        time.sleep(5)
         STORE._update_upstream_config(target=None)
         try:
+            # Force reload with check=True to catch config errors
             subprocess.run(
                 ["docker", "exec", "blue-green-proxy", "nginx", "-s", "reload"],
-                check=False, timeout=10
+                check=True, timeout=10
             )
             log_event(
                 event_type="CHAOS_RESTORE_COMPLETE",
