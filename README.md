@@ -20,15 +20,31 @@ Instead of updating a server in-place (causing downtime), two identical environm
 
 ## Quick Start
 
-**Requirements:** Docker Desktop running on your machine.
+### Prerequisites
+- **Docker Desktop** installed and running on your machine.
+- (Windows users) Powershell or Command Prompt.
+- (Mac/Linux users) Bash or Zsh.
 
-```
-Double-click START.bat
+### 1. Run the Platform
+The platform is designed to be "one-click" portable. 
+
+**Windows:**
+Double-click `START.bat`
+
+**Mac/Linux:**
+```bash
+chmod +x start.sh && ./start.sh
 ```
 
-- Opens `http://localhost` automatically — the unified Titanium dashboard.
-- All five containers start and health-check before traffic is accepted.
-- Press any key in the terminal window to stop everything cleanly.
+- Opens `http://localhost` (or your configured port) automatically.
+- All containers start and health-check before traffic is accepted.
+- Press any key (Windows) or Ctrl+C (Mac/Linux) to stop cleanly.
+
+### 2. Custom Port (Optional)
+If port 80 is already in use on your machine:
+1. Create a `.env` file (the script does this for you on first run).
+2. Change `HTTP_PORT=80` to another port, like `HTTP_PORT=8080`.
+3. Re-run the startup script.
 
 ---
 
