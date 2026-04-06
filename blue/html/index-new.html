@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LearnHub - Blue Environment: Stable Curriculum Experience" />
+  <title>LearnHub | Blue Stable Experience</title>
+  <link rel="stylesheet" href="/shared.css" />
+  <style>
+    :root {
+      --bg: #edf4ff;
+      --surface: #ffffff;
+      --surface-soft: #f7faff;
+      --ink: #182e52;
+      --muted: #5f769d;
+      --line: #d4e3ff;
+      --brand: #1f54d8;
+      --brand-2: #2aa4ff;
+      --ok: #0c8f4a;
+      --shadow: 0 16px 44px rgba(28, 66, 150, 0.15);
+    }
+
+    body {
+      color: var(--ink);
+      background:
+        radial-gradient(900px 400px at -5% -15%, #dbe9ff 0, transparent 65%),
+        radial-gradient(760px 330px at 105% -20%, #d6f4ff 0, transparent 70%),
+        var(--bg);
+    }
+
+    .layout {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1.1rem 1rem 2rem;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      background: linear-gradient(140deg, #ffffff, #f4f9ff);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 0.8rem 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .logo {
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      font-size: 1rem;
+      color: var(--brand);
+    }
+
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+      border: 1px solid #90caf9;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1565c0;
+    }
+
+    .version-badge::before {
+      content: '●';
+      font-size: 1.2rem;
+      color: var(--ok);
+    }
+
+    .hero {
+      margin-top: 0.9rem;
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 0.9rem;
+    }
+
+    .hero-panel,
+    .hero-side {
+      background: linear-gradient(145deg, #ffffff, #f6faff);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1rem 1.05rem;
+      box-shadow: 0 10px 30px rgba(28, 66, 150, 0.1);
+    }
+
+    h1 {
+      margin: 0.62rem 0 0;
+      font-size: clamp(1.48rem, 2.4vw, 2.25rem);
+      line-height: 1.18;
+    }
+
+    .lead {
+      margin: 0.58rem 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.55rem;
+      margin-top: 0.9rem;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      background: #f9fbff;
+      border-radius: 12px;
+      padding: 0.58rem;
+      transition: all 0.2s ease;
+    }
+
+    .metric:hover {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(31, 84, 216, 0.1);
+    }
+
+    .metric p {
+      margin: 0;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.69rem;
+      letter-spacing: 0.07em;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 0.22rem;
+      font-size: 1.15rem;
+      color: var(--ink);
+    }
+
+    .side-title {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .session-list {
+      margin: 0.68rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.52rem;
+    }
+
+    .session-list li {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0.56rem 0.62rem;
+      transition: all 0.2s ease;
+    }
+
+    .session-list li:hover {
+      background: var(--surface-soft);
+      border-color: var(--brand);
+    }
+
+    .session-list li:focus-within {
+      outline: 2px solid var(--brand);
+      outline-offset: -1px;
+    }
+
+    .session-list strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    .session-list small {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="layout">
+    <div class="topbar" role="banner">
+      <h1 class="logo">
+        <span aria-label="LearnHub">LH</span>
+      </h1>
+      <div class="version-badge" role="status" aria-live="polite" aria-atomic="true">
+        Blue Stable
+      </div>
+    </div>
+  </nav>
+
+  <main class="layout">
+    <section class="hero" aria-label="Learning Environment Overview">
+      <article class="hero-panel">
+        <div class="badge" aria-label="Production Environment">
+          ✓ PRODUCTION
+        </div>
+        <h2>Blue Environment</h2>
+        <p class="lead">
+          Stable and proven curriculum pathways with high-confidence learning modules.
+          Optimized for consistent user experience and reliable performance.
+        </p>
+        <dl class="metrics" role="group" aria-label="Environment Metrics">
+          <div class="metric">
+            <p>Status</p>
+            <strong aria-label="Status: Healthy">
+              <span aria-hidden="true">●</span> Healthy
+            </strong>
+          </div>
+          <div class="metric">
+            <p>Uptime</p>
+            <strong aria-label="Uptime: 99.99%">99.99%</strong>
+          </div>
+          <div class="metric">
+            <p>Requests/min</p>
+            <strong aria-label="Requests per minute: 1.2K">1.2K</strong>
+          </div>
+        </dl>
+      </article>
+
+      <aside class="hero-side" aria-label="Recent Activity">
+        <h3 class="side-title">Active Sessions</h3>
+        <ul class="session-list" role="list">
+          <li role="listitem" aria-label="Session 1: User engaged with Module 4">
+            <strong>Module 4: Foundations</strong>
+            <small>2 users active</small>
+          </li>
+          <li role="listitem" aria-label="Session 2: User engaged with Assessment">
+            <strong>Assessment Quiz</strong>
+            <small>1 user active</small>
+          </li>
+          <li role="listitem" aria-label="Session 3: User reviewing content">
+            <strong>Review: Chapter 3</strong>
+            <small>3 users active</small>
+          </li>
+        </ul>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    // Accessibility: Announce environment status to screen readers
+    window.addEventListener('load', () => {
+      const status = document.querySelector('[role="status"]');
+      if (status) {
+        status.textContent = 'Blue Version - Stable Environment Loaded';
+      }
+    });
+
+    // Keyboard navigation support
+    document.querySelectorAll('.session-list li').forEach((item) => {
+      item.setAttribute('tabindex', '0');
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          console.log('Session selected:', item.textContent);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

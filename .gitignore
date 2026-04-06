@@ -1,0 +1,59 @@
+
+# ─── Runtime & State (generated at runtime by monitor service) ───────────────
+runtime/
+*.pid
+*.log
+*.lock
+
+# ─── Nginx Runtime Config (written by monitor at startup) ────────────────────
+proxy/conf.d/active-upstream.conf
+
+# ─── Frontend Build Output ────────────────────────────────────────────────────
+frontend/dist/
+frontend/node_modules/
+node_modules/
+.npm
+
+# ─── Python Cache ─────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+.venv/
+venv/
+
+# ─── IDE & Editor ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Environment Variables & Secrets ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+secrets/
+*.key
+*.pem
+
+# ─── Temporary Files ──────────────────────────────────────────────────────────
+*.tmp
+*.temp
+.tmp/
+temp/
+curl-loop.log
+.curl_loop.pid
+
+# ─── Test Coverage ────────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+coverage.xml
+
+# ─── Backups ──────────────────────────────────────────────────────────────────
+*.bak
+*.backup
+~*

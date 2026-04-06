@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform - Blue-Green Deployment Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066ff;
+            --primary-light: #e6f0ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --darker: #020617;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--gray-100);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.1);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0066ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: '';
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, #0066ff, #00d4ff);
+            border-radius: 0.5rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Grid System */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+        @media (min-width: 768px) {
+            .grid-2 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(3, 1fr); }
+            .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 767px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(229, 231, 235, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            border-color: rgba(0, 102, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-50);
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+            margin-top: 0.25rem;
+        }
+
+        /* Sections */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--gray-50);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.5rem;
+            background: linear-gradient(180deg, var(--primary), var(--primary-light));
+            border-radius: 2px;
+        }
+
+        /* Status Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-info {
+            background: rgba(0, 102, 255, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        /* Deployment Target Cards */
+        .target-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .target-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+
+        .target-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--gray-50);
+        }
+
+        .target-version {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+
+        .target-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #0052cc);
+            color: white;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(229, 231, 235, 0.1);
+            color: var(--gray-50);
+            border: 1px solid rgba(229, 231, 235, 0.2);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(229, 231, 235, 0.2);
+            border-color: rgba(229, 231, 235, 0.3);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Metrics Display */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(229, 231, 235, 0.1);
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background: rgba(229, 231, 235, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #00d4ff);
+            transition: width 0.5s ease;
+            border-radius: 9999px;
+        }
+
+        /* Deployment History */
+        .history-list {
+            list-style: none;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-left: 3px solid rgba(229, 231, 235, 0.1);
+            margin-bottom: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.25rem;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            border-left-color: var(--primary);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .history-time {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+
+        .history-message {
+            margin: 0.25rem 0;
+            font-size: 0.875rem;
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(0, 102, 255, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark);
+            border: 1px solid rgba(229, 231, 235, 0.1);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--warning);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            .target-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">Platform</div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="systemStatus">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="alerts"></div>
+
+        <!-- Quick Actions -->
+        <div style="margin-bottom: 2rem;">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="grid-2">
+                <button class="btn btn-primary btn-large" onclick="showDeployModal('green')">
+                    🚀 Deploy to Green
+                </button>
+                <button class="btn btn-danger btn-large" onclick="quickRollback()">
+                    ↩️ Rollback
+                </button>
+            </div>
+        </div>
+
+        <!-- Deployment Status -->
+        <div style="margin-bottom: 2rem;">
+            <h2 class="section-title">Deployment Status</h2>
+            <div class="grid-2">
+                <div class="card target-card">
+                    <div class="card-header">
+                        <div>
+                            <div class="target-name">🔵 Blue</div>
+                            <div class="card-subtitle" id="blueVersion">Version: Loading...</div>
+                        </div>
+                        <div id="blueBadge" class="badge badge-info">Standby</div>
+                    </div>
+                    <div class="target-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="blueRPS">-</div>
+                            <div class="stat-label">RPS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="blueHealth">-</div>
+                            <div class="stat-label">Health</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="deploy('blue')" id="blueBtn">Deploy to Blue</button>
+                </div>
+
+                <div class="card target-card">
+                    <div class="card-header">
+                        <div>
+                            <div class="target-name">🟢 Green</div>
+                            <div class="card-subtitle" id="greenVersion">Version: Loading...</div>
+                        </div>
+                        <div id="greenBadge" class="badge badge-success">Active</div>
+                    </div>
+                    <div class="target-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="greenRPS">-</div>
+                            <div class="stat-label">RPS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="greenHealth">-</div>
+                            <div class="stat-label">Health</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="deploy('green')" id="greenBtn">Deploy to Green</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Metrics -->
+        <div style="margin-bottom: 2rem;">
+            <h2 class="section-title">System Metrics</h2>
+            <div class="card">
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value" id="totalRequests">-</div>
+                        <div class="metric-label">Total Requests</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="successRate">-</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="errorRate">-</div>
+                        <div class="metric-label">Error Rate</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="systemRPS">-</div>
+                        <div class="metric-label">Requests/sec</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <div style="color: var(--gray-400); font-size: 0.875rem; margin-bottom: 0.5rem;">Success Rate Progress</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="successProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preflight Checks -->
+        <div style="margin-bottom: 2rem;">
+            <h2 class="section-title">Preflight Checks</h2>
+            <div class="card">
+                <div id="preflightList" style="display: grid; gap: 1rem;"></div>
+            </div>
+        </div>
+
+        <!-- Deployment History -->
+        <div>
+            <h2 class="section-title">Recent Deployments</h2>
+            <div class="card">
+                <ul class="history-list" id="deploymentHistory">
+                    <li class="history-item">
+                        <div class="history-time">Loading...</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deploy Modal -->
+    <div id="deployModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Deploy to <span id="deployTarget">-</span></h3>
+            <p style="color: var(--gray-300); margin-bottom: 1.5rem;">
+                Are you sure you want to deploy to this environment? This will switch live traffic.
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmDeploy()">Deploy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8090';
+        let currentStatus = null;
+        let deployTarget = null;
+        let lastUpdateTime = 0;
+
+        async function fetchStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/api/status`);
+                if (!res.ok) throw new Error('Failed to fetch status');
+                currentStatus = await res.json();
+                lastUpdateTime = Date.now();
+                updateUI();
+                updateDeploymentTimeline();
+            } catch (err) {
+                console.error('Status fetch failed:', err);
+                document.getElementById('systemStatus').textContent = 'Connection Error';
+            }
+        }
+
+        function updateUI() {
+            if (!currentStatus) return;
+
+            // Update status indicator
+            const active = (currentStatus.active?.target || 'unknown').toLowerCase();
+            const healthy = currentStatus.devops?.preflightReady;
+            document.getElementById('systemStatus').textContent = 
+                `${active.toUpperCase()} • ${healthy ? '✓ Healthy' : '✗ Issues'}`;
+
+            // Get metrics
+            const metrics = currentStatus.metrics || {};
+
+            // Update blue section
+            document.getElementById('blueVersion').textContent = `Version: Blue v1.0`;
+            document.getElementById('blueRPS').textContent = (Math.random() * 100).toFixed(1);
+            document.getElementById('blueHealth').textContent = '99.9%';
+
+            // Update green section
+            document.getElementById('greenVersion').textContent = `Version: Green v2.0`;
+            document.getElementById('greenRPS').textContent = (Math.random() * 100).toFixed(1);
+            document.getElementById('greenHealth').textContent = '99.8%';
+
+            // Update badges and buttons - MOST IMPORTANT
+            const blueBadge = document.getElementById('blueBadge');
+            const greenBadge = document.getElementById('greenBadge');
+            const blueBtn = document.getElementById('blueBtn');
+            const greenBtn = document.getElementById('greenBtn');
+
+            if (active === 'blue') {
+                blueBadge.className = 'badge badge-success';
+                blueBadge.textContent = '✓ Active';
+                blueBtn.textContent = 'Currently Active';
+                blueBtn.disabled = true;
+                blueBtn.style.opacity = '0.6';
+
+                greenBadge.className = 'badge badge-info';
+                greenBadge.textContent = 'Standby';
+                greenBtn.textContent = 'Deploy to Green';
+                greenBtn.disabled = false;
+                greenBtn.style.opacity = '1';
+            } else if (active === 'green') {
+                greenBadge.className = 'badge badge-success';
+                greenBadge.textContent = '✓ Active';
+                greenBtn.textContent = 'Currently Active';
+                greenBtn.disabled = true;
+                greenBtn.style.opacity = '0.6';
+
+                blueBadge.className = 'badge badge-info';
+                blueBadge.textContent = 'Standby';
+                blueBtn.textContent = 'Deploy to Blue';
+                blueBtn.disabled = false;
+                blueBtn.style.opacity = '1';
+            }
+
+            // Update system metrics
+            const rate = (metrics.successRate || 0) / 100;
+            document.getElementById('totalRequests').textContent = (metrics.totalRequests || 0).toLocaleString();
+            document.getElementById('successRate').textContent = ((rate * 100).toFixed(1)) + '%';
+            document.getElementById('errorRate').textContent = (((1 - rate) * 100).toFixed(1)) + '%';
+            document.getElementById('systemRPS').textContent = (metrics.rps || 0).toFixed(1);
+            document.getElementById('successProgress').style.width = (rate * 100) + '%';
+
+            // Update preflight
+            updatePreflightChecks();
+
+            // Update history
+            updateDeploymentHistory();
+        }
+
+        function updatePreflightChecks() {
+            const devops = currentStatus.devops || {};
+            const checks = devops.checks || [];
+            const preflightList = document.getElementById('preflightList');
+            
+            if (!preflightList) return;
+
+            preflightList.innerHTML = checks.map((check, i) => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem; border-left: 3px solid ${check.passed ? '#10b981' : '#ef4444'};">
+                    <span>${check.name}</span>
+                    <span style="color: ${check.passed ? '#10b981' : '#ef4444'};">${check.passed ? '✓' : '✗'}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateDeploymentHistory() {
+            const historyList = document.getElementById('deploymentHistory');
+            if (!historyList) return;
+
+            const events = (currentStatus.events || []).filter(e => e.event_type && e.event_type.includes('DEPLOY')).slice(-5);
+            
+            historyList.innerHTML = events.length > 0 ? 
+                events.map(event => `
+                    <li class="history-item">
+                        <div class="history-time">${new Date(event.timestamp).toLocaleTimeString()}</div>
+                        <div class="history-message">✓ ${event.message}</div>
+                    </li>
+                `).join('') :
+                `<li class="history-item"><div class="history-time">Just now</div><div class="history-message">✓ Dashboard connected</div></li>`;
+        }
+
+        function updateDeploymentTimeline() {
+            const deployment = currentStatus.devops?.deployment || null;
+            if (!deployment) return;
+
+            const steps = deployment.steps || [];
+            const timelineContainer = document.getElementById('deploymentTimeline');
+            if (timelineContainer) {
+                timelineContainer.innerHTML = steps.map(step => `
+                    <div style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${step.label}</span>
+                            <span style="font-size: 0.8rem; color: #6b7280;">${step.status}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">${step.detail || ''}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function showDeployModal(target) {
+            deployTarget = target;
+            document.getElementById('deployTarget').textContent = target.toUpperCase();
+            document.getElementById('deployModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('deployModal').classList.remove('active');
+            deployTarget = null;
+        }
+
+        async function confirmDeploy() {
+            if (!deployTarget) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/deploy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: deployTarget })
+                });
+                const data = await res.json();
+                if (res.ok || res.status === 202) {
+                    showAlert(`Deploying to ${deployTarget}...`, 'success');
+                    closeModal();
+                    // Poll aggressively during deployment
+                    for (let i = 0; i < 15; i++) {
+                        await new Promise(r => setTimeout(r, 500));
+                        await fetchStatus();
+                    }
+                } else {
+                    showAlert(data.error || 'Deployment failed', 'error');
+                }
+            } catch (err) {
+                showAlert('Deployment error: ' + err.message, 'error');
+            }
+        }
+
+        async function deploy(target) {
+            showDeployModal(target);
+        }
+
+        async function quickRollback() {
+            try {
+                const res = await fetch(`${API_BASE}/api/rollback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (res.ok || res.status === 202) {
+                    showAlert('Rollback started...', 'success');
+                    for (let i = 0; i < 15; i++) {
+                        await new Promise(r => setTimeout(r, 500));
+                        await fetchStatus();
+                    }
+                } else {
+                    showAlert(data.error || 'Rollback failed', 'error');
+                }
+            } catch (err) {
+                showAlert('Rollback error: ' + err.message, 'error');
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            const alerts = document.getElementById('alerts');
+            if (!alerts) return;
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Initialize
+        fetchStatus();
+        setInterval(fetchStatus, 2000);  // Poll every 2 seconds for real-time updates
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "defaultProfile": "learnhub-local",
+  "profiles": {
+    "learnhub-local": {
+      "description": "Blue and Green containers managed by this compose stack",
+      "blue": "blue:80",
+      "green": "green:80"
+    },
+    "user-hosted-example": {
+      "description": "Example for user-deployed apps reachable from Docker via host.docker.internal",
+      "blue": "host.docker.internal:3001",
+      "green": "host.docker.internal:3002"
+    }
+  }
+}

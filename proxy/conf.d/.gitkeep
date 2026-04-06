@@ -1,0 +1,2 @@
+# This file keeps the conf.d directory tracked by git.
+# active-upstream.conf is generated at runtime by the monitor service.
