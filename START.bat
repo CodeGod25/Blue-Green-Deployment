@@ -18,6 +18,17 @@ if not exist ".env" (
     copy .env.example .env >nul
 )
 
+REM [0.6/3] Initialize Nginx upstream (Crucial for fresh clones)
+if not exist "proxy\conf.d\active-upstream.conf" (
+    echo  Initializing active-upstream.conf...
+    (
+      echo upstream active_backend {
+      echo   server blue:80 weight=100;
+      echo   keepalive 64;
+      echo }
+    ) > "proxy\conf.d\active-upstream.conf"
+)
+
 REM Default start port
 set PORT=80
 
@@ -30,11 +41,12 @@ if exist ".env" (
 
 echo  [0/2] Checking port availability...
 :check_port
-netstat -ano | find /i "0.0.0.0:!PORT!" >nul 2>&1
+REM Robust check for Port (captures :80 but not :8080)
+netstat -ano | findstr /R /C:":!PORT! " >nul 2>&1
 if !ERRORLEVEL! equ 0 (
-    echo  Port !PORT! is already in use.
+    echo  Port !PORT! is already in use by another application.
     if !PORT! equ 80 (
-        set PORT=8080
+        set /a PORT=8080
     ) else (
         set /a PORT=!PORT! + 1
     )

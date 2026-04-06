@@ -17,6 +17,17 @@ if [ ! -f ".env" ]; then
     cp .env.example .env
 fi
 
+# [0.6/3] Initialize Nginx upstream (Crucial for fresh clones)
+if [ ! -f "proxy/conf.d/active-upstream.conf" ]; then
+    echo "  Initializing active-upstream.conf..."
+    cat <<EOF > proxy/conf.d/active-upstream.conf
+upstream active_backend {
+  server blue:80 weight=100;
+  keepalive 64;
+}
+EOF
+fi
+
 # Initial port choice
 HTTP_PORT=$(grep HTTP_PORT .env | cut -d '=' -f2 || echo "80")
 [ -z "$HTTP_PORT" ] && HTTP_PORT="80"
@@ -24,7 +35,7 @@ HTTP_PORT=$(grep HTTP_PORT .env | cut -d '=' -f2 || echo "80")
 # [0.7/3] Port search logic
 echo "  [0/2] Checking port availability..."
 while lsof -Pi :$HTTP_PORT -sTCP:LISTEN -t >/dev/null 2>&1 || netstat -an | grep "\.$HTTP_PORT " >/dev/null 2>&1 || netstat -an | grep ":$HTTP_PORT " >/dev/null 2>&1; do
-    echo "  Port $HTTP_PORT is busy."
+    echo "  Port $HTTP_PORT is busy by another application."
     if [ "$HTTP_PORT" -eq 80 ]; then
         HTTP_PORT=8080
     else
