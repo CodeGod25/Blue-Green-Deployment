@@ -26,7 +26,7 @@ Instead of updating a server in-place (causing downtime), two identical environm
 - (Mac/Linux users) Bash or Zsh.
 
 ### 1. Run the Platform
-The platform is designed to be "one-click" portable. 
+The platform is designed to be "zero-configuration" and portable. 
 
 **Windows:**
 Double-click `START.bat`
@@ -36,14 +36,15 @@ Double-click `START.bat`
 chmod +x start.sh && ./start.sh
 ```
 
-- Opens `http://localhost` (or your configured port) automatically.
-- All containers start and health-check before traffic is accepted.
-- Press any key (Windows) or Ctrl+C (Mac/Linux) to stop cleanly.
+- **Smart Port Detection**: If your default port (80) is busy, the script automatically finds the next available port (e.g., 8080) and uses it. No manual setup required.
+- **Auto Environment**: Creates its own `.env` on first run.
+- **Dashboard**: Opens the dashboard automatically at the correct address.
+- **Cleans Up**: Press any key (Windows) or Ctrl+C (Mac/Linux) to stop and remove containers cleanly.
 
-### 2. Custom Port (Optional)
-If port 80 is already in use on your machine:
-1. Create a `.env` file (the script does this for you on first run).
-2. Change `HTTP_PORT=80` to another port, like `HTTP_PORT=8080`.
+### 2. Manual Customization (Optional)
+If you want to force a specific port:
+1. Edit the `.env` file created by the script.
+2. Change `HTTP_PORT=80` to your desired port.
 3. Re-run the startup script.
 
 ---

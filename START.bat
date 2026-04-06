@@ -18,7 +18,7 @@ if not exist ".env" (
     copy .env.example .env >nul
 )
 
-REM Default values if not in .env
+REM Default start port
 set PORT=80
 
 REM Quick parser for .env (specifically for opening the browser later)
@@ -28,7 +28,26 @@ if exist ".env" (
     )
 )
 
-echo  [0/3] Checking Docker...
+echo  [0/2] Checking port availability...
+:check_port
+netstat -ano | find /i "0.0.0.0:!PORT!" >nul 2>&1
+if !ERRORLEVEL! equ 0 (
+    echo  Port !PORT! is already in use.
+    if !PORT! equ 80 (
+        set PORT=8080
+    ) else (
+        set /a PORT=!PORT! + 1
+    )
+    echo  Checking next port: !PORT!...
+    goto :check_port
+)
+
+REM Export found port for Docker Compose
+set HTTP_PORT=!PORT!
+echo  Using port: !HTTP_PORT! (Host) -> 80 (Container)
+
+echo.
+echo  [1/3] Checking Docker...
 docker info >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     color 0E
@@ -48,10 +67,6 @@ if %ERRORLEVEL% neq 0 (
     )
 )
 echo  Docker is running.
-
-echo.
-echo  [1/3] Stopping any old containers...
-docker compose down 2>nul
 
 echo.
 echo  [2/3] Building images and starting all services...

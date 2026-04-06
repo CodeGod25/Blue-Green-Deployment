@@ -17,9 +17,25 @@ if [ ! -f ".env" ]; then
     cp .env.example .env
 fi
 
-# Extract port for display (default to 80 if not found)
+# Initial port choice
 HTTP_PORT=$(grep HTTP_PORT .env | cut -d '=' -f2 || echo "80")
 [ -z "$HTTP_PORT" ] && HTTP_PORT="80"
+
+# [0.7/3] Port search logic
+echo "  [0/2] Checking port availability..."
+while lsof -Pi :$HTTP_PORT -sTCP:LISTEN -t >/dev/null 2>&1 || netstat -an | grep "\.$HTTP_PORT " >/dev/null 2>&1 || netstat -an | grep ":$HTTP_PORT " >/dev/null 2>&1; do
+    echo "  Port $HTTP_PORT is busy."
+    if [ "$HTTP_PORT" -eq 80 ]; then
+        HTTP_PORT=8080
+    else
+        HTTP_PORT=$((HTTP_PORT + 1))
+    fi
+    echo "  Trying next port: $HTTP_PORT..."
+done
+
+# Export for Docker Compose
+export HTTP_PORT
+echo "  [✓] Using port: $HTTP_PORT (Host) -> 80 (Container)"
 
 # Check Docker is running
 if ! docker info > /dev/null 2>&1; then

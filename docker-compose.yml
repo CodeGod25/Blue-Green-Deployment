@@ -18,9 +18,9 @@ services:
     read_only: false
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
-      interval: 3s
+      interval: 10s
       timeout: 2s
-      retries: 5
+      retries: 6
 
   green:
     build:
@@ -41,9 +41,9 @@ services:
     read_only: false
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
-      interval: 3s
+      interval: 10s
       timeout: 2s
-      retries: 5
+      retries: 6
 
   proxy:
     image: nginx:1.27.0-alpine
@@ -72,9 +72,9 @@ services:
       - ./proxy/conf.d:/etc/nginx/conf.d
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
-      retries: 5
+      retries: 8
 
   monitor:
     build:
@@ -111,9 +111,9 @@ services:
       - ./proxy/conf.d:/workspace/proxy/conf.d
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:8090/healthz"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
-      retries: 5
+      retries: 6
 
   dashboard:
     build:
@@ -136,9 +136,9 @@ services:
       - no-new-privileges:true
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
-      retries: 5
+      retries: 6
 
 networks:
   blue-green-network:
